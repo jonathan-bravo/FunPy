@@ -14,71 +14,72 @@ class Llist:
         self.nxt = [i if i != len(self.val)+1 else None for i in range(2, len(self.val)+2)]
         self.prv = [i if i != 0 else None for i in range(len(self.val))]
 
+    def extend_nxt(self, pos, loc):
+        nxt = list()
+        [nxt.extend([self.prv[self.prv.index(self.nxt[0])-1],x]) if pos == 1 and i == 0 else nxt.append(x) if i+1 != pos else nxt.extend([loc,x]) for i,x in enumerate(self.nxt)]
+        return nxt
+    
+    def extend_prv(self, loc):
+        prv = list()
+        if loc in self.nxt:
+            [prv.append(x) if self.nxt[self.nxt.index(loc)-1] != self.prv[i] else prv.extend([x,loc]) for i,x in enumerate(self.prv)]
+        else:
+            [prv.extend([x,loc]) if i == 0 else prv.append(x) for i,x in enumerate(self.prv)]
+        return prv
+		
     def insertion(self, pos, new):
-        self.val.append(new)
-        self.num.append(self.num[-1] + 1)
-        new_loc = self.num[-1]
-        new_nxt = []
-        new_prv = []
-        n = 0
-        p = 0
-        while n != len(self.nxt):
-            if n+1 == pos:
-                new_nxt.append(new_loc)	
-            new_nxt.append(self.nxt[n])
-            n += 1
-        self.nxt = new_nxt
-        while p != len(self.prv):
-            new_prv.append(self.prv[p])
-            if self.nxt[self.nxt.index(new_loc)-1] == self.prv[p]:
-                new_prv.append(new_loc)
-            p += 1
-        self.prv = new_prv
-
+        self.val.append(new) # add the value to the list
+        self.num.append(self.num[-1] + 1) # add next count to end
+        self.nxt = self.extend_nxt(pos, self.num[-1])
+        self.prv = self.extend_prv(self.num[-1])
+		
     def print_forward(self):
-        temp = [nu for tu in zip(self.num, self.val) for nu in tu]
-        pl = [temp[temp.index(self.prv[self.prv.index(None) + 1]) + 1]]
-        [pl.append(temp[temp.index(i) + 1]) for i in self.nxt if i != None]
-        print(pl)
-
+        temp = dict()
+        [temp.setdefault(n,v) for n,v in zip(self.num, self.val)]
+        pl = [temp[self.prv[1]]] # adding first value in forward print
+        [pl.append(temp[i]) for i in self.nxt if i != None] # adding all subsequent values
+        return pl
+		
     def print_reverse(self):
-        temp = [nu for tu in zip(self.num, self.val) for nu in tu]
-        pl = [temp[temp.index(self.nxt[self.nxt.index(None) - 1]) + 1]]
-        [pl.append(temp[temp.index(i) + 1]) for i in self.prv[::-1] if i != None]
-        print(pl)
+        temp = dict()
+        [temp.setdefault(n,v) for n,v in zip(self.num, self.val)]
+        pl = [temp[self.nxt[-2]]]
+        [pl.append(temp[i]) for i in self.prv[::-1] if i != None]
 
+        return pl
+		
     def delete(self, pos):
-        temp = []
-        pl = []
-        for i,v in zip(self.num, self.val):
-            temp.append(i)
-            temp.append(v)
-        pl.append(temp[temp.index(self.nxt[self.nxt.index(None) - 1]) + 1])
-        for i in self.nxt:
-            if i == None:
-                break
-            pl.append(temp[temp.index(i) + 1])
-        gone = pl[pos]
-        del self.num[self.num.index(temp[temp.index(gone) - 1])]
-        del self.nxt[self.nxt.index(temp[temp.index(gone) - 1])]
-        del self.prv[self.prv.index(temp[temp.index(gone) - 1])]
-        del self.val[self.val.index(temp[temp.index(gone)])]
+        pl = self.print_forward()
+        del_val = pl[pos]
+        del_index = self.val.index(del_val)+1
+        self.num.pop(self.num.index(del_index))
+        self.nxt.pop(self.nxt.index(del_index))
+        self.prv.pop(self.prv.index(del_index))
+        self.val.pop(self.val.index(del_val))
 
 def main():
     val = [5, 10, 15]
-            
+
     test = Llist(val)
 
-    test.forwardRead()
-    test.reverseRead()
+    print(test.print_forward())
+    print(test.print_reverse())
+    print('')
 
     test.insertion(2,20)
-    test.forwardRead()
-    test.reverseRead()
+    print(test.print_forward())
+    print(test.print_reverse())
+    print('')
+
+    test.insertion(1,20)
+    print(test.print_forward())
+    print(test.print_reverse())
+    print('')
 
     test.delete(2)
-    test.forwardRead()
-    test.reverseRead()
+    print(test.print_forward())
+    print(test.print_reverse())
+    print('')
 
 if __name__ == '__main__':
-    main()
+	main()
